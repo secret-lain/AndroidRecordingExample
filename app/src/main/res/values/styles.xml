@@ -1,0 +1,14 @@
+<resources>
+    <!-- 기본적으로 toolbar 사용을 강제한다. 그러므로 NoActionBar 이다. -->
+    <style name="BaseActivityTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+
+        <item name="colorPrimary">@color/md_indigo_700</item>
+        <item name="colorPrimaryDark">@color/md_indigo_800</item>
+        <item name="colorAccent">@color/md_teal_900</item>
+        <item name="android:windowBackground">@color/md_indigo_200</item>
+    </style>
+
+</resources>
