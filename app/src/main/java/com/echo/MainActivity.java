@@ -1,5 +1,6 @@
 package com.echo;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -23,14 +24,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @BindView(R.id.toolbar)Toolbar toolbar;
 //    @BindView(R.id.activity_main)CoordinatorLayout background;
     @BindView(R.id.backgroundImageView)ImageView backgroundImageView;
+    @BindView(R.id.recordImage)ImageView recordImage;
+
+    Context mContext;
     RecordController recorder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mContext = this;
         ButterKnife.bind(this);
-        Glide.with(this).load(R.drawable.main_background).centerCrop().into(backgroundImageView);
+        Glide.with(mContext).load(R.drawable.main_background).centerCrop().into(backgroundImageView);
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("TEST");
@@ -76,7 +81,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             case R.id.recordImage:
-                recorder.recordStart();
+                    recorder.recordStart(new RecordController.recordCallback() {
+                        @Override
+                        public void recordingStarted() {
+                            Glide.with(mContext).load(R.drawable.stop_50px).into(recordImage);
+                        }
+
+                        @Override
+                        public void recordingEnded() {
+                            Glide.with(mContext).load(R.drawable.record_100px).into(recordImage);
+                        }
+                    });
                 break;
             case R.id.playImage:
                 recorder.playAudio();
