@@ -1,7 +1,6 @@
 package com.echo;
 
 import android.os.Bundle;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
@@ -9,28 +8,33 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
+
+import com.bumptech.glide.Glide;
+import com.echo.record.RecordController;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     @BindView(R.id.floatingActionButton)FloatingActionButton fab;
     @BindView(R.id.recondingLayout)CardView recordingLayout;
     @BindView(R.id.toolbar)Toolbar toolbar;
-    @BindView(R.id.activity_main)CoordinatorLayout background;
+//    @BindView(R.id.activity_main)CoordinatorLayout background;
+    @BindView(R.id.backgroundImageView)ImageView backgroundImageView;
+    RecordController recorder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        Glide.with(this).load(R.drawable.main_background).centerCrop().into(backgroundImageView);
 
         setSupportActionBar(toolbar);
-        toolbar.setTitle("");
-        toolbar.setSubtitle("");
-        fab.setOnClickListener(this);
-        recordingLayout.setOnClickListener(this);
-        background.setOnClickListener(this);
+        getSupportActionBar().setTitle("TEST");
+        recorder = new RecordController(this);
     }
 
     @Override
@@ -43,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    @OnClick({R.id.activity_main, R.id.floatingActionButton, R.id.recordImage, R.id.playImage})
     @Override
     public void onClick(View view) {
         switch(view.getId()){
@@ -62,11 +67,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Animation slideDown = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.slide_down);//for recordLayout
                 Animation fadeIn = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in);//for fab
 
-                fab.startAnimation(fadeIn);
-                fab.setVisibility(View.VISIBLE);
+                if(fab.getVisibility() == View.GONE){
+                    fab.startAnimation(fadeIn);
+                    fab.setVisibility(View.VISIBLE);
 
-                view.startAnimation(slideDown);
-                view.setVisibility(View.GONE);
+                    recordingLayout.startAnimation(slideDown);
+                    recordingLayout.setVisibility(View.GONE);
+                }
+                break;
+            case R.id.recordImage:
+                recorder.recordStart();
+                break;
+            case R.id.playImage:
+                recorder.playAudio();
                 break;
         }
     }
