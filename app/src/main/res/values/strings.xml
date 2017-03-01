@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">project_echo</string>
+
+    <!-- for Widget -->
+    <string name="string_send">보내기</string>
+    <string name="string_check_message">메세지 확인</string>
+    <string name="string_setting">설정</string>
+    <string name="title_activity_main">MainActivity</string>
 </resources>

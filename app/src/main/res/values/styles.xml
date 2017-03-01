@@ -11,4 +11,8 @@
         <item name="android:windowBackground">@color/md_blue_50</item>
     </style>
 
+    <style name="BaseActivityTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="BaseActivityTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
 </resources>
