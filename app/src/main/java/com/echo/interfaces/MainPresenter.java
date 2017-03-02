@@ -25,12 +25,17 @@ package com.echo.interfaces;
  */
 public interface MainPresenter {
     void setView(MainPresenter.View view);
-
+    void onRecordStarted();
+    void onRecordStopped();
+    void sendRecord();
 
     interface View{
         void initView();
         void onRecordStarted();
         void onRecordStopped();
         void onProgressUpdated(int progress);
+        void onPlayStarted();
+        void onPlayStopped();
+        void onSendButtonClicked();
     }
 }

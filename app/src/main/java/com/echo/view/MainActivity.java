@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.dd.processbutton.FlatButton;
 import com.echo.R;
 import com.echo.interfaces.MainPresenter;
@@ -29,6 +30,8 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
     boolean isPlayButtonExpanded;
     boolean isProgressVisible;
     boolean isRecording;
+    boolean isPlaying;
+    MainDrawer drawer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +48,18 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
     public void initView() {
         isPlayButtonExpanded = false;
         isProgressVisible = false;
+        drawer = new MainDrawer();
+        drawer.setView(this, toolbar);
+
+
+        Glide.with(MainActivity.this)
+                .load(R.drawable.stop_64px_blue400)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .preload();
+        Glide.with(MainActivity.this)
+                .load(R.drawable.recording_64px_red400)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .preload();
     }
 
     /**
@@ -92,17 +107,19 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
 
     }
 
-    @OnClick({R.id.record_button, R.id.play_button, R.id.send_button})
     @Override
-    public void onClick(View view) {
-        switch(view.getId()){
-            case R.id.record_button:
-                if(!isRecording)
-                    onRecordStarted();
-                else
-                    onRecordStopped();
-                break;
-        }
+    public void onPlayStarted() {
+
+    }
+
+    @Override
+    public void onPlayStopped() {
+
+    }
+
+    @Override
+    public void onSendButtonClicked() {
+
     }
 
     /**
@@ -117,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
         Animation recordButtonHide = AnimationUtils.loadAnimation(this, R.anim.main_record_button_hide);
 
         if(expanding && playButton.getVisibility() == View.GONE){
-            isPlayButtonExpanded = true;
+            isPlayButtonExpanded = !isPlayButtonExpanded;
             /*
             1. 왼쪽으로 서서히 생기는 플레이버튼 애니메이션
             1. 오른쪽으로 이동하는 녹음버튼 애니메이션
@@ -128,7 +145,7 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
 
             recordButton.startAnimation(recordButtonShow);
         } else if(!expanding && playButton.getVisibility() == View.VISIBLE){
-            isPlayButtonExpanded = false;
+            isPlayButtonExpanded = !isPlayButtonExpanded;
             /*
             1. 오른쪽으로 서서히 사라지는 플레이버튼 애니메이션
             1. 왼쪽으로 이동하는 녹음버튼 애니메이션
@@ -149,9 +166,31 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
      */
     private void progressLayoutAnimated(boolean visible){
         if(visible){
-            isProgressVisible = false;
+            isProgressVisible = !isProgressVisible;
+            progressText.setVisibility(View.VISIBLE);
         } else{
-            isProgressVisible = true;
+            isProgressVisible = !isProgressVisible;
+            progressText.setVisibility(View.GONE);
+        }
+    }
+
+    @OnClick({R.id.record_button, R.id.play_button, R.id.send_button})
+    @Override
+    public void onClick(View view) {
+        switch(view.getId()){
+            case R.id.record_button:
+                if(!isRecording)
+                    onRecordStarted();
+                else
+                    onRecordStopped();
+                break;
+            case R.id.play_button:
+                if(!isPlaying)
+                    onPlayStarted();
+                else
+                    onPlayStopped();
+                break;
+
         }
     }
 }
