@@ -36,6 +36,7 @@ public interface MainPresenter {
         void onProgressUpdated(int progress);
         void onPlayStarted();
         void onPlayStopped();
+        void onPageFlipped(boolean toMessageCheckLayout);
         void onSendButtonClicked();
     }
 }

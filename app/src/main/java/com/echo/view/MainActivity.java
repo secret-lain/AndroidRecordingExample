@@ -3,11 +3,15 @@ package com.echo.view;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.ViewFlipper;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -27,6 +31,9 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
     @BindView(R.id.record_progressbar) ProgressBarDeterminate progressBar;
     @BindView(R.id.record_progress_textview) TextView progressText;
     @BindView(R.id.send_button) FlatButton sendButton;
+    @BindView(R.id.view_flipper) ViewFlipper viewFlipper;
+
+
     boolean isPlayButtonExpanded;
     boolean isProgressVisible;
     boolean isRecording;
@@ -46,11 +53,16 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
 
     @Override
     public void initView() {
+        Animation flipperIn = AnimationUtils.loadAnimation(this, R.anim.main_view_flipper_in);
+        Animation flipperOut = AnimationUtils.loadAnimation(this, R.anim.main_view_flipper_out);
+
         isPlayButtonExpanded = false;
         isProgressVisible = false;
         drawer = new MainDrawer();
         drawer.setView(this, toolbar);
 
+        viewFlipper.setInAnimation(flipperIn);
+        viewFlipper.setOutAnimation(flipperOut);
 
         Glide.with(MainActivity.this)
                 .load(R.drawable.stop_64px_blue400)
@@ -81,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
         Glide.with(this)
                 .load(R.drawable.stop_64px_blue400)
                 .dontAnimate()
+                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                 .into(recordButton);
     }
 
@@ -99,6 +112,7 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
         Glide.with(this)
                 .load(R.drawable.recording_64px_red400)
                 .dontAnimate()
+                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                 .into(recordButton);
     }
 
@@ -120,6 +134,28 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
     @Override
     public void onSendButtonClicked() {
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+
+        /*
+         * ButterKnife 가 MainActivity가 아닌 Menu 안의 Layout의 View를 찾지 못해서 순수 등록
+         */
+        RelativeLayout menuLayout = (RelativeLayout) menu.findItem(R.id.menu_switch_item).getActionView();
+        final Switch flipSwtich = (Switch) menuLayout.findViewById(R.id.flip_switch);
+        flipSwtich.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(flipSwtich.isChecked())
+                    onPageFlipped(true);
+                else
+                    onPageFlipped(false);
+            }
+        });
+
+        return super.onCreateOptionsMenu(menu);
     }
 
     /**
@@ -165,12 +201,21 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
      *                 false = ProgressText 가림
      */
     private void progressLayoutAnimated(boolean visible){
+        Animation progressTextShow = AnimationUtils.loadAnimation(this, R.anim.main_progress_text_show);
+        Animation progressTextHide = AnimationUtils.loadAnimation(this, R.anim.main_progress_text_hide);
+
         if(visible){
             isProgressVisible = !isProgressVisible;
+
+            progressText.setVisibility(View.INVISIBLE);
+            progressText.startAnimation(progressTextShow);
             progressText.setVisibility(View.VISIBLE);
         } else{
             isProgressVisible = !isProgressVisible;
-            progressText.setVisibility(View.GONE);
+
+            /*progressText.setVisibility(View.INVISIBLE);
+            progressText.startAnimation(progressTextHide);*/
+            progressText.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -190,7 +235,20 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
                 else
                     onPlayStopped();
                 break;
+        }
+    }
 
+    @Override
+    public void onPageFlipped(boolean toMessageCheckLayout) {
+
+        //switch가 오른쪽(체크상태)일때. 뷰플리퍼가 메세지체크페이지를 가리킨다.
+        if(toMessageCheckLayout){
+            //녹음중이라면 정지시킨다. + 데이터초기화
+            viewFlipper.setDisplayedChild(1);
+        }
+        //switch가 왼쪽(비체크상태)일때, 뷰플리퍼가 녹음페이지를 가리킨다.
+        else{
+            viewFlipper.setDisplayedChild(0);
         }
     }
 }
