@@ -22,6 +22,12 @@ package com.echo.interfaces;
  * 1. 녹음 레이아웃 열고닫기
  * 2. 메세지 확인 레이아웃 열고닫기
  * 3. 세팅버튼클릭동작(Intent 처리할것같은데)
+ *
+ * 2017-03-03
+ * 크게 세부분으로 나눌 수 있겠다.
+ * Drawer -> View -> Presenter로 오는 Intent 로직
+ * Recording 로직
+ * Sending 로직
  */
 public interface MainPresenter {
     void setView(MainPresenter.View view);

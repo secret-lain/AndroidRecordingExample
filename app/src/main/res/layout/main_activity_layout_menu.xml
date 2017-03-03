@@ -3,10 +3,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center">
+
     <Switch
         android:id="@+id/flip_switch"
-        android:switchPadding="10dp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:switchPadding="15dp"
+        android:textOff="녹음하기"
+        android:textOn="메세지확인" />
 
 </RelativeLayout>

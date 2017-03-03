@@ -1,9 +1,29 @@
 <resources>
-    <string name="app_name">project_echo</string>
+    <string name="app_name">울림</string>
+    <string name="title_activity_main">MainActivity</string>
+
+    <!-- for Preference -->
+    <string name="is_first_app_started">is_first_app_started</string>
 
     <!-- for Widget -->
     <string name="string_send">보내기</string>
     <string name="string_check_message">메세지 확인</string>
     <string name="string_setting">설정</string>
-    <string name="title_activity_main">MainActivity</string>
+
+    <string name="profile_years">나이 :</string>
+    <string name="profile_sex">성별 :</string>
+    <string name="profile_location">지역 :</string>
+
+    <string name="drawer_account_setting">프로필 설정</string>
+    <string name="drawer_alarm">알람 설정</string>
+    <string name="drawer_information">어플리케이션 정보</string>
+    <string name="drawer_report">신고 내역</string>
+    <string name="drawer_share">공유 하기</string>
+
+    <string name="backpress_guide">한번 더 누르시면 종료됩니다.</string>
+
+    <string name="send_homo_sexual">동성에게만</string>
+    <string name="send_near_years">또래에게만</string>
+    <string name="send_near_location">같은 지역만</string>
+    <string name="send_more_multiple_user">좀 더 많은 유저에게\n보내기</string>
 </resources>

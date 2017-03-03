@@ -17,6 +17,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.dd.processbutton.FlatButton;
 import com.echo.R;
+import com.echo.common.BackPressCloseHandler;
 import com.echo.interfaces.MainPresenter;
 import com.gc.materialdesign.views.ProgressBarDeterminate;
 
@@ -24,15 +25,22 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class MainActivity extends AppCompatActivity implements MainPresenter.View, View.OnClickListener{
-    @BindView(R.id.toolbar) Toolbar toolbar;
-    @BindView(R.id.record_button) ImageView recordButton;
-    @BindView(R.id.play_button) ImageView playButton;
-    @BindView(R.id.record_progressbar) ProgressBarDeterminate progressBar;
-    @BindView(R.id.record_progress_textview) TextView progressText;
-    @BindView(R.id.send_button) FlatButton sendButton;
-    @BindView(R.id.view_flipper) ViewFlipper viewFlipper;
-
+public class MainActivity extends AppCompatActivity implements MainPresenter.View, View.OnClickListener {
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
+    @BindView(R.id.record_button)
+    ImageView recordButton;
+    @BindView(R.id.play_button)
+    ImageView playButton;
+    @BindView(R.id.record_progressbar)
+    ProgressBarDeterminate progressBar;
+    @BindView(R.id.record_progress_textview)
+    TextView progressText;
+    @BindView(R.id.send_button)
+    FlatButton sendButton;
+    @BindView(R.id.view_flipper)
+    ViewFlipper viewFlipper;
+    BackPressCloseHandler backPressCloseHandler;
 
     boolean isPlayButtonExpanded;
     boolean isProgressVisible;
@@ -41,10 +49,18 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
     MainDrawer drawer;
 
     @Override
+    public void onBackPressed() {
+        if (!viewReturnFirst()) {
+            backPressCloseHandler.onBackPressed();
+        }
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity_layout);
         ButterKnife.bind(this);
+        backPressCloseHandler = new BackPressCloseHandler(this);
 
         setSupportActionBar(toolbar);
         initView();
@@ -63,15 +79,6 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
 
         viewFlipper.setInAnimation(flipperIn);
         viewFlipper.setOutAnimation(flipperOut);
-
-        Glide.with(MainActivity.this)
-                .load(R.drawable.stop_64px_blue400)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .preload();
-        Glide.with(MainActivity.this)
-                .load(R.drawable.recording_64px_red400)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .preload();
     }
 
     /**
@@ -83,16 +90,17 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
         isRecording = true;
 
         //Progress 텍스트가 없다면 연다.
-        if(!isProgressVisible)
+        if (!isProgressVisible)
             progressLayoutAnimated(true);
 
         //플레이버튼이 열려있다면 닫는다.
-        if(isPlayButtonExpanded)
+        if (isPlayButtonExpanded)
             playLayoutAnimated(false);
 
         Glide.with(this)
                 .load(R.drawable.stop_64px_blue400)
                 .dontAnimate()
+                .placeholder(recordButton.getDrawable())
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                 .into(recordButton);
     }
@@ -102,16 +110,17 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
         isRecording = false;
 
         //Progress 텍스트가 있다면 없앤다
-        if(isProgressVisible)
+        if (isProgressVisible)
             progressLayoutAnimated(false);
 
         //플레이버튼이 없다면 연다
-        if(!isPlayButtonExpanded)
+        if (!isPlayButtonExpanded)
             playLayoutAnimated(true);
 
         Glide.with(this)
                 .load(R.drawable.recording_64px_red400)
                 .dontAnimate()
+                .placeholder(recordButton.getDrawable())
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                 .into(recordButton);
     }
@@ -148,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
         flipSwtich.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(flipSwtich.isChecked())
+                if (flipSwtich.isChecked())
                     onPageFlipped(true);
                 else
                     onPageFlipped(false);
@@ -158,18 +167,60 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
         return super.onCreateOptionsMenu(menu);
     }
 
+    @Override
+    public void onPageFlipped(boolean toMessageCheckLayout) {
+        viewReturnFirst();
+        //switch가 오른쪽(체크상태)일때. 뷰플리퍼가 메세지체크페이지를 가리킨다.
+        if (toMessageCheckLayout) {
+            //녹음중이라면 정지시킨다. + 데이터초기화
+            viewFlipper.setDisplayedChild(1);
+        }
+        //switch가 왼쪽(비체크상태)일때, 뷰플리퍼가 녹음페이지를 가리킨다.
+        else {
+            viewFlipper.setDisplayedChild(0);
+        }
+    }
+
+    @OnClick({R.id.record_button, R.id.play_button, R.id.send_button, R.id.send_homo_sexual_button, R.id.send_near_location, R.id.send_near_years})
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.record_button:
+                if (!isRecording)
+                    onRecordStarted();
+                else
+                    onRecordStopped();
+                break;
+            case R.id.play_button:
+                if (!isPlaying)
+                    onPlayStarted();
+                else
+                    onPlayStopped();
+                break;
+            case R.id.send_homo_sexual_button:
+            case R.id.send_near_location:
+            case R.id.send_near_years:
+                toggleSendButton(findViewById(view.getId()));
+        }
+    }
+
+    /*******************************************************************************************
+     * 이 아래로는 private 함수.
+     *******************************************************************************************/
+
     /**
      * 애니메이션을 주면서 record_layout 에 playButton visibility를 toggle한다.
+     *
      * @param expanding true = playButton 출현
-     *                false = playButton 숨김
+     *                  false = playButton 숨김
      */
-    private void playLayoutAnimated(boolean expanding){
+    private void playLayoutAnimated(boolean expanding) {
         Animation playButtonShow = AnimationUtils.loadAnimation(this, R.anim.main_play_button_show);
         Animation playButtonHide = AnimationUtils.loadAnimation(this, R.anim.main_play_button_hide);
         Animation recordButtonShow = AnimationUtils.loadAnimation(this, R.anim.main_record_button_show);
         Animation recordButtonHide = AnimationUtils.loadAnimation(this, R.anim.main_record_button_hide);
 
-        if(expanding && playButton.getVisibility() == View.GONE){
+        if (expanding && playButton.getVisibility() == View.GONE) {
             isPlayButtonExpanded = !isPlayButtonExpanded;
             /*
             1. 왼쪽으로 서서히 생기는 플레이버튼 애니메이션
@@ -180,7 +231,7 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
             playButton.setVisibility(View.VISIBLE);
 
             recordButton.startAnimation(recordButtonShow);
-        } else if(!expanding && playButton.getVisibility() == View.VISIBLE){
+        } else if (!expanding && playButton.getVisibility() == View.VISIBLE) {
             isPlayButtonExpanded = !isPlayButtonExpanded;
             /*
             1. 오른쪽으로 서서히 사라지는 플레이버튼 애니메이션
@@ -198,19 +249,19 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
      * ProgressText 를 출현시킨다.
      *
      * @param visible true = ProgressText 보임
-     *                 false = ProgressText 가림
+     *                false = ProgressText 가림
      */
-    private void progressLayoutAnimated(boolean visible){
+    private void progressLayoutAnimated(boolean visible) {
         Animation progressTextShow = AnimationUtils.loadAnimation(this, R.anim.main_progress_text_show);
         Animation progressTextHide = AnimationUtils.loadAnimation(this, R.anim.main_progress_text_hide);
 
-        if(visible){
+        if (visible) {
             isProgressVisible = !isProgressVisible;
 
             progressText.setVisibility(View.INVISIBLE);
             progressText.startAnimation(progressTextShow);
             progressText.setVisibility(View.VISIBLE);
-        } else{
+        } else {
             isProgressVisible = !isProgressVisible;
 
             /*progressText.setVisibility(View.INVISIBLE);
@@ -219,36 +270,41 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
         }
     }
 
-    @OnClick({R.id.record_button, R.id.play_button, R.id.send_button})
-    @Override
-    public void onClick(View view) {
-        switch(view.getId()){
-            case R.id.record_button:
-                if(!isRecording)
-                    onRecordStarted();
-                else
-                    onRecordStopped();
-                break;
-            case R.id.play_button:
-                if(!isPlaying)
-                    onPlayStarted();
-                else
-                    onPlayStopped();
-                break;
+    /**
+     * 초기상태로 되돌린다.
+     *
+     * @return true = 초기상태가 아니였고, 초기상태로 되돌아감
+     * false = 함수 호출전부터 초기상태였음
+     */
+    private boolean viewReturnFirst() {
+        if (isRecording) {
+            //Recording 중에는 정지버튼 하나만 있다. 내부쓰레드 중지 후 이모습만 바꾼다.
+            isRecording = !isRecording;
+
+            progressLayoutAnimated(false);
+            Glide.with(this)
+                    .load(R.drawable.recording_64px_red400)
+                    .dontAnimate()
+                    .placeholder(recordButton.getDrawable())
+                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                    .into(recordButton);
+            return true;
+        } else if (isPlayButtonExpanded) {
+            playLayoutAnimated(false);
+            return true;
+        } else {
+            return false;
         }
     }
 
-    @Override
-    public void onPageFlipped(boolean toMessageCheckLayout) {
-
-        //switch가 오른쪽(체크상태)일때. 뷰플리퍼가 메세지체크페이지를 가리킨다.
-        if(toMessageCheckLayout){
-            //녹음중이라면 정지시킨다. + 데이터초기화
-            viewFlipper.setDisplayedChild(1);
-        }
-        //switch가 왼쪽(비체크상태)일때, 뷰플리퍼가 녹음페이지를 가리킨다.
-        else{
-            viewFlipper.setDisplayedChild(0);
+    private void toggleSendButton(View button) {
+        if (button.getTag().equals("unclicked")) {
+            button.setTag("clicked");
+            button.setBackgroundResource(R.color.colorPrimaryDark);
+        } else {
+            button.setTag("unclicked");
+            button.setBackgroundResource(R.color.colorAccent);
         }
     }
 }
+
