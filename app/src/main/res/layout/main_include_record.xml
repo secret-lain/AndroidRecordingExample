@@ -136,7 +136,7 @@
                     android:layout_gravity="center"
                     android:layout_marginTop="10dp"
                     android:text="전송하기"
-                    android:textColor="@color/windowBackground"
+                    android:textColor="@color/md_white_text"
                     app:pb_colorNormal="@color/colorPrimary"
                     app:pb_colorPressed="@color/colorPrimaryDark" />
 

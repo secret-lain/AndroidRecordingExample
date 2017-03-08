@@ -31,8 +31,8 @@ public class RecordController {
     private AudioTrack player;
     private ArrayList<Short> recordedBuffer;
 
-    public boolean isRecording;
-    public boolean isPlaying;
+    private boolean isRecording;
+    private boolean isPlaying;
 
     public RecordController(Context parentContext){
         mContext = parentContext;
@@ -55,7 +55,7 @@ public class RecordController {
                 int mRecorderReaded = 0;
                 isRecording = true;
 
-                while(mRecorderReaded < SAMPLEING_RATE * 10 && isRecording){
+                while(isRecording){
                     short[] currentBuffer = new short[BUFFER_SIZE_BYTES / 2]; // short = 2byte
                     int currentRecorderReaded = recorder.read(currentBuffer, 0, BUFFER_SIZE_BYTES / 2);
                     for(int i = 0 ; i < currentRecorderReaded; i++){
@@ -88,7 +88,7 @@ public class RecordController {
             @Override
             public void run() {
                 if(afterStartedSecond[0] > LIMITSECOND){
-                    recordStop();
+                    callback.recordingEnded();
                 }
                 else{
                     callback.onProgress(afterStartedSecond[0]);
@@ -130,6 +130,7 @@ public class RecordController {
 
     public void destroyPlayer(){
         if(player != null){
+            player.stop();
             player.release();
             player = null;
         }

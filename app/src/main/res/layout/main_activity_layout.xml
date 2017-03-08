@@ -2,10 +2,11 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
+    android:id="@+id/main_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
+    android:orientation="vertical"
     tools:context="com.echo.view.MainActivity">
 
     <android.support.design.widget.AppBarLayout
@@ -22,17 +23,31 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <ViewFlipper
-        android:id="@+id/view_flipper"
+    <RelativeLayout
+        android:id="@+id/drawer_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp">
+        android:layout_height="match_parent">
 
-        <include layout="@layout/main_include_record" />
+        <ViewFlipper
+            android:id="@+id/view_flipper"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp">
 
-        <include layout="@layout/main_include_message" />
+            <include layout="@layout/main_include_message" />
 
-    </ViewFlipper>
+            <include layout="@layout/main_include_record" />
+
+        </ViewFlipper>
+
+        <FrameLayout
+            android:id="@+id/drawer_frame"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </FrameLayout>
+
+    </RelativeLayout>
 
 </LinearLayout>

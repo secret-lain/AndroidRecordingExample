@@ -33,6 +33,8 @@ public interface MainPresenter {
     void setView(MainPresenter.View view);
     void onRecordStarted();
     void onRecordStopped();
+    void onPlayStarted();
+    void onPlayStopped();
     void sendRecord();
 
     interface View{

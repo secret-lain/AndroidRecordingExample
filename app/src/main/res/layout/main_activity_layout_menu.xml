@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/menu_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center">
 
-    <Switch
-        android:id="@+id/flip_switch"
+    <ImageView
+        android:id="@+id/toggle_menu_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:switchPadding="15dp"
-        android:textOff="녹음하기"
-        android:textOn="메세지확인" />
-
+        android:layout_marginRight="15dp"
+        app:srcCompat="@drawable/message_plus_24px" />
 </RelativeLayout>

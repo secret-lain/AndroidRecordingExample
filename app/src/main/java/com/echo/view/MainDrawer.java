@@ -29,13 +29,14 @@ public class MainDrawer {
 
         builder = new DrawerBuilder(activity)
                 .withToolbar(toolbar)
+                .withRootView(R.id.drawer_layout)
                 .withSliderBackgroundColorRes(R.color.md_green_50)
                 .withSelectedItem(-1)
                 .withMultiSelect(false)
                 .withCloseOnClick(true);
 
         inputDrawerItem();
-        inputHeaderView();
+        //inputHeaderView();
         inputOnClick();
 
         drawer = builder.build();

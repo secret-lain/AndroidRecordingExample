@@ -9,7 +9,6 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
 
@@ -19,6 +18,7 @@ import com.dd.processbutton.FlatButton;
 import com.echo.R;
 import com.echo.common.BackPressCloseHandler;
 import com.echo.interfaces.MainPresenter;
+import com.echo.view.presenter.MainPresenterImpl;
 import com.gc.materialdesign.views.ProgressBarDeterminate;
 
 import butterknife.BindView;
@@ -42,10 +42,12 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
     ViewFlipper viewFlipper;
     BackPressCloseHandler backPressCloseHandler;
 
+    MainPresenterImpl presenter;
     boolean isPlayButtonExpanded;
     boolean isProgressVisible;
     boolean isRecording;
     boolean isPlaying;
+    int pageToggle;
     MainDrawer drawer;
 
     @Override
@@ -61,8 +63,11 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
         setContentView(R.layout.main_activity_layout);
         ButterKnife.bind(this);
         backPressCloseHandler = new BackPressCloseHandler(this);
-
+        pageToggle = 1;
         setSupportActionBar(toolbar);
+
+        presenter = new MainPresenterImpl();
+        presenter.setView(this);
         initView();
     }
 
@@ -126,18 +131,34 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
     }
 
     @Override
-    public void onProgressUpdated(int progress) {
-
+    public void onProgressUpdated(final int progress) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progressBar.setProgress(progress);
+                progressText.setText(progress + " / 10 초");
+            }
+        });
     }
 
     @Override
     public void onPlayStarted() {
-
+        //stop_64px_blue400
+        Glide.with(this)
+                .load(R.drawable.stop_64px_blue400)
+                .placeholder(playButton.getDrawable())
+                .dontAnimate()
+                .into(playButton);
     }
 
     @Override
     public void onPlayStopped() {
-
+        //stop_64px_blue400
+        Glide.with(this)
+                .load(R.drawable.stop_64px_blue400)
+                .placeholder(playButton.getDrawable())
+                .dontAnimate()
+                .into(playButton);
     }
 
     @Override
@@ -153,14 +174,29 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
          * ButterKnife 가 MainActivity가 아닌 Menu 안의 Layout의 View를 찾지 못해서 순수 등록
          */
         RelativeLayout menuLayout = (RelativeLayout) menu.findItem(R.id.menu_switch_item).getActionView();
-        final Switch flipSwtich = (Switch) menuLayout.findViewById(R.id.flip_switch);
-        flipSwtich.setOnClickListener(new View.OnClickListener() {
+        final ImageView toggleImage = (ImageView) menuLayout.findViewById(R.id.toggle_menu_image);
+        final RelativeLayout toggleLayout = (RelativeLayout) menuLayout.findViewById(R.id.menu_layout);
+        toggleLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (flipSwtich.isChecked())
+                if (pageToggle == 1){
                     onPageFlipped(true);
-                else
+                    Glide.with(MainActivity.this)
+                            .load(R.drawable.list_plus_24px)
+                            .placeholder(toggleImage.getDrawable())
+                            .dontAnimate()
+                            .into(toggleImage);
+                    pageToggle = 0;
+                }
+                else{
                     onPageFlipped(false);
+                    Glide.with(MainActivity.this)
+                            .load(R.drawable.message_plus_24px)
+                            .placeholder(toggleImage.getDrawable())
+                            .dontAnimate()
+                            .into(toggleImage);
+                    pageToggle = 1;
+                }
             }
         });
 
@@ -187,15 +223,15 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
         switch (view.getId()) {
             case R.id.record_button:
                 if (!isRecording)
-                    onRecordStarted();
+                    presenter.onRecordStarted();
                 else
-                    onRecordStopped();
+                    presenter.onRecordStopped();
                 break;
             case R.id.play_button:
                 if (!isPlaying)
-                    onPlayStarted();
+                    presenter.onPlayStarted();
                 else
-                    onPlayStopped();
+                    presenter.onPlayStopped();
                 break;
             case R.id.send_homo_sexual_button:
             case R.id.send_near_location:
@@ -214,35 +250,40 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
      * @param expanding true = playButton 출현
      *                  false = playButton 숨김
      */
-    private void playLayoutAnimated(boolean expanding) {
-        Animation playButtonShow = AnimationUtils.loadAnimation(this, R.anim.main_play_button_show);
-        Animation playButtonHide = AnimationUtils.loadAnimation(this, R.anim.main_play_button_hide);
-        Animation recordButtonShow = AnimationUtils.loadAnimation(this, R.anim.main_record_button_show);
-        Animation recordButtonHide = AnimationUtils.loadAnimation(this, R.anim.main_record_button_hide);
+    private void playLayoutAnimated(final boolean expanding) {
+        final Animation playButtonShow = AnimationUtils.loadAnimation(this, R.anim.main_play_button_show);
+        final Animation playButtonHide = AnimationUtils.loadAnimation(this, R.anim.main_play_button_hide);
+        final Animation recordButtonShow = AnimationUtils.loadAnimation(this, R.anim.main_record_button_show);
+        final Animation recordButtonHide = AnimationUtils.loadAnimation(this, R.anim.main_record_button_hide);
 
-        if (expanding && playButton.getVisibility() == View.GONE) {
-            isPlayButtonExpanded = !isPlayButtonExpanded;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (expanding && playButton.getVisibility() == View.GONE) {
+                    isPlayButtonExpanded = !isPlayButtonExpanded;
             /*
             1. 왼쪽으로 서서히 생기는 플레이버튼 애니메이션
             1. 오른쪽으로 이동하는 녹음버튼 애니메이션
             2. 플레이버튼 visible
              */
-            playButton.startAnimation(playButtonShow);
-            playButton.setVisibility(View.VISIBLE);
+                    playButton.startAnimation(playButtonShow);
+                    playButton.setVisibility(View.VISIBLE);
 
-            recordButton.startAnimation(recordButtonShow);
-        } else if (!expanding && playButton.getVisibility() == View.VISIBLE) {
-            isPlayButtonExpanded = !isPlayButtonExpanded;
+                    recordButton.startAnimation(recordButtonShow);
+                } else if (!expanding && playButton.getVisibility() == View.VISIBLE) {
+                    isPlayButtonExpanded = !isPlayButtonExpanded;
             /*
             1. 오른쪽으로 서서히 사라지는 플레이버튼 애니메이션
             1. 왼쪽으로 이동하는 녹음버튼 애니메이션
             3. 플레이버튼 gone
              */
-            playButton.startAnimation(playButtonHide);
-            playButton.setVisibility(View.GONE);
+                    playButton.startAnimation(playButtonHide);
+                    playButton.setVisibility(View.GONE);
 
-            recordButton.startAnimation(recordButtonHide);
-        }
+                    recordButton.startAnimation(recordButtonHide);
+                }
+            }
+        });
     }
 
     /**
@@ -251,23 +292,30 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
      * @param visible true = ProgressText 보임
      *                false = ProgressText 가림
      */
-    private void progressLayoutAnimated(boolean visible) {
-        Animation progressTextShow = AnimationUtils.loadAnimation(this, R.anim.main_progress_text_show);
+    private void progressLayoutAnimated(final boolean visible) {
+        final Animation progressTextShow = AnimationUtils.loadAnimation(this, R.anim.main_progress_text_show);
         Animation progressTextHide = AnimationUtils.loadAnimation(this, R.anim.main_progress_text_hide);
 
-        if (visible) {
-            isProgressVisible = !isProgressVisible;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (visible) {
 
-            progressText.setVisibility(View.INVISIBLE);
-            progressText.startAnimation(progressTextShow);
-            progressText.setVisibility(View.VISIBLE);
-        } else {
-            isProgressVisible = !isProgressVisible;
+                    isProgressVisible = !isProgressVisible;
+
+                    progressText.setVisibility(View.INVISIBLE);
+                    progressText.startAnimation(progressTextShow);
+                    progressText.setVisibility(View.VISIBLE);
+                } else {
+                    isProgressVisible = !isProgressVisible;
 
             /*progressText.setVisibility(View.INVISIBLE);
             progressText.startAnimation(progressTextHide);*/
-            progressText.setVisibility(View.INVISIBLE);
-        }
+                    progressText.setVisibility(View.INVISIBLE);
+                }
+            }
+        });
+
     }
 
     /**
@@ -305,6 +353,10 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
             button.setTag("unclicked");
             button.setBackgroundResource(R.color.colorAccent);
         }
+    }
+
+    private void initProgress(){
+
     }
 }
 
